@@ -1,39 +1,48 @@
-﻿using MatchDataManager.Api.Models;
+﻿using MatchDataManager.Api.Context;
+using MatchDataManager.Api.Interfaces;
+using MatchDataManager.Api.Models;
 
 namespace MatchDataManager.Api.Repositories;
 
-public static class TeamsRepository
+public class TeamsRepository : ITeamsRepository
 {
-    private static readonly List<Team> _teams = new();
 
-    public static void AddTeam(Team team)
+
+    private readonly DatabaseContext _dbContext;
+
+    public TeamsRepository(DatabaseContext databaseContext)
+    {
+        _dbContext = databaseContext;
+    }
+
+    public void AddTeam(Team team)
     {
         team.Id = Guid.NewGuid();
-        _teams.Add(team);
+        _dbContext.Teams.Add(team);
+        _dbContext.SaveChanges();
     }
 
-    public static void DeleteTeam(Guid teamId)
+    public void DeleteTeam(Guid teamId)
     {
-        var team = _teams.FirstOrDefault(x => x.Id == teamId);
-        if (team is not null)
-        {
-            _teams.Remove(team);
-        }
+        var team = _dbContext.Teams.FirstOrDefault(x => x.Id == teamId);
+        _dbContext.Teams.Remove(team);
+        _dbContext.SaveChanges();
+     
     }
 
-    public static IEnumerable<Team> GetAllTeams()
+    public IEnumerable<Team> GetAllTeams()
     {
-        return _teams;
+        return _dbContext.Teams.ToList();
     }
 
-    public static Team GetTeamById(Guid id)
+    public Team GetTeamById(Guid id)
     {
-        return _teams.FirstOrDefault(x => x.Id == id);
+        return _dbContext.Teams.FirstOrDefault(x => x.Id == id);
     }
 
-    public static void UpdateTeam(Team team)
+    public void UpdateTeam(Team team)
     {
-        var existingTeam = _teams.FirstOrDefault(x => x.Id == team.Id);
+        var existingTeam = _dbContext.Teams.FirstOrDefault(x => x.Id == team.Id);
         if (existingTeam is null || team is null)
         {
             throw new ArgumentException("Team doesn't exist.", nameof(team));
@@ -41,5 +50,7 @@ public static class TeamsRepository
 
         existingTeam.CoachName = team.CoachName;
         existingTeam.Name = team.Name;
+
+        _dbContext.SaveChanges();
     }
 }

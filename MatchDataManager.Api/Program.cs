@@ -1,6 +1,15 @@
+using MatchDataManager.Api.Context;
+using MatchDataManager.Api.Interfaces;
+using MatchDataManager.Api.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDbContext<DatabaseContext>();
+builder.Services.AddScoped<ITeamsRepository, TeamsRepository>();
+builder.Services.AddScoped<ILocationsRepository, LocationsRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

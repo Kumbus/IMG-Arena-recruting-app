@@ -1,39 +1,46 @@
-﻿using MatchDataManager.Api.Models;
+﻿using MatchDataManager.Api.Context;
+using MatchDataManager.Api.Interfaces;
+using MatchDataManager.Api.Models;
 
 namespace MatchDataManager.Api.Repositories;
 
-public static class LocationsRepository
+public class LocationsRepository : ILocationsRepository
 {
-    private static readonly List<Location> _locations = new();
+    private readonly DatabaseContext _dbContext;
+    
+    public LocationsRepository(DatabaseContext databaseContext)
+    {
+        _dbContext = databaseContext;
+    }
 
-    public static void AddLocation(Location location)
+    public void AddLocation(Location location)
     {
         location.Id = Guid.NewGuid();
-        _locations.Add(location);
+        _dbContext.Locations.Add(location);
+        _dbContext.SaveChanges();
     }
 
-    public static void DeleteLocation(Guid locationId)
+    public void DeleteLocation(Guid locationId)
     {
-        var location = _locations.FirstOrDefault(x => x.Id == locationId);
-        if (location is not null)
-        {
-            _locations.Remove(location);
-        }
+        var location = _dbContext.Locations.FirstOrDefault(x => x.Id == locationId);
+        _dbContext.Locations.Remove(location);
+        _dbContext.SaveChanges();
+
     }
 
-    public static IEnumerable<Location> GetAllLocations()
+    public IEnumerable<Location> GetAllLocations()
     {
-        return _locations;
+        return _dbContext.Locations;
     }
 
-    public static Location GetLocationById(Guid id)
+    public Location GetLocationById(Guid id)
     {
-        return _locations.FirstOrDefault(x => x.Id == id);
+        return _dbContext.Locations.FirstOrDefault(x => x.Id == id);
     }
 
-    public static void UpdateLocation(Location location)
+    public void UpdateLocation(Location location)
     {
-        var existingLocation = _locations.FirstOrDefault(x => x.Id == location.Id);
+        var existingLocation = _dbContext.Locations.FirstOrDefault(x => x.Id == location.Id);
         if (existingLocation is null || location is null)
         {
             throw new ArgumentException("Location doesn't exist.", nameof(location));
@@ -41,5 +48,7 @@ public static class LocationsRepository
 
         existingLocation.City = location.City;
         existingLocation.Name = location.Name;
+
+        _dbContext.SaveChanges();
     }
 }
