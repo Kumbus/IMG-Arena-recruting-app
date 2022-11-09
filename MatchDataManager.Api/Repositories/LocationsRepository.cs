@@ -1,54 +1,61 @@
 ﻿using MatchDataManager.Api.Context;
 using MatchDataManager.Api.Interfaces;
 using MatchDataManager.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MatchDataManager.Api.Repositories;
 
-public class LocationsRepository : ILocationsRepository
+public class LocationsRepository : RepositoryBase<Location>, ILocationsRepository 
 {
-    private readonly DatabaseContext _dbContext;
+    //private readonly DatabaseContext _dbContext;
     
-    public LocationsRepository(DatabaseContext databaseContext)
+    public LocationsRepository(DatabaseContext databaseContext) : base(databaseContext)
     {
-        _dbContext = databaseContext;
+
     }
 
     public void AddLocation(Location location)
     {
-        location.Id = Guid.NewGuid();
-        _dbContext.Locations.Add(location);
-        _dbContext.SaveChanges();
+        Add(location);
+        //location.Id = Guid.NewGuid();
+        //_dbContext.Locations.Add(location);
+        //_dbContext.SaveChanges();
     }
 
-    public void DeleteLocation(Guid locationId)
+    public void DeleteLocation(Location location)
     {
-        var location = _dbContext.Locations.FirstOrDefault(x => x.Id == locationId);
-        _dbContext.Locations.Remove(location);
-        _dbContext.SaveChanges();
+        Delete(location);
+        //var location = _dbContext.Locations.FirstOrDefault(x => x.Id == locationId);
+        //_dbContext.Locations.Remove(location);
+        //_dbContext.SaveChanges();
 
     }
 
-    public IEnumerable<Location> GetAllLocations()
+    public async Task<IEnumerable<Location>> GetAllLocationsAsync()
     {
-        return _dbContext.Locations;
+        return await FindAll().ToListAsync();
+        //return _dbContext.Locations;
     }
 
-    public Location GetLocationById(Guid id)
+    public async Task<Location> GetLocationByIdAsync(Guid id)
     {
-        return _dbContext.Locations.FirstOrDefault(x => x.Id == id);
+        return await FindByCondition(l => l.Id.Equals(id)).FirstOrDefaultAsync();
+        //return _dbContext.Locations.FirstOrDefault(x => x.Id == id);
     }
 
     public void UpdateLocation(Location location)
     {
-        var existingLocation = _dbContext.Locations.FirstOrDefault(x => x.Id == location.Id);
-        if (existingLocation is null || location is null)
-        {
-            throw new ArgumentException("Location doesn't exist.", nameof(location));
-        }
 
-        existingLocation.City = location.City;
-        existingLocation.Name = location.Name;
+        Update(location);
+        //var existingLocation = _dbContext.Locations.FirstOrDefault(x => x.Id == location.Id);
+        //if (existingLocation is null || location is null)
+        //{
+        //    throw new ArgumentException("Location doesn't exist.", nameof(location));
+        //}
 
-        _dbContext.SaveChanges();
+        //existingLocation.City = location.City;
+        //existingLocation.Name = location.Name;
+
+        //_dbContext.SaveChanges();
     }
 }

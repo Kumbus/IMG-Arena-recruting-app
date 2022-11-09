@@ -1,56 +1,39 @@
 ﻿using MatchDataManager.Api.Context;
 using MatchDataManager.Api.Interfaces;
 using MatchDataManager.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MatchDataManager.Api.Repositories;
 
-public class TeamsRepository : ITeamsRepository
+public class TeamsRepository : RepositoryBase<Team>, ITeamsRepository
 {
-
-
-    private readonly DatabaseContext _dbContext;
-
-    public TeamsRepository(DatabaseContext databaseContext)
+    public TeamsRepository(DatabaseContext databaseContext) : base(databaseContext)
     {
-        _dbContext = databaseContext;
     }
 
     public void AddTeam(Team team)
     {
-        team.Id = Guid.NewGuid();
-        _dbContext.Teams.Add(team);
-        _dbContext.SaveChanges();
+        Add(team);
     }
 
-    public void DeleteTeam(Guid teamId)
+    public void DeleteTeam(Team team)
     {
-        var team = _dbContext.Teams.FirstOrDefault(x => x.Id == teamId);
-        _dbContext.Teams.Remove(team);
-        _dbContext.SaveChanges();
+        Delete(team);
      
     }
 
-    public IEnumerable<Team> GetAllTeams()
+    public async Task<IEnumerable<Team>> GetAllTeamsAsync()
     {
-        return _dbContext.Teams.ToList();
+        return await FindAll().ToListAsync();
     }
 
-    public Team GetTeamById(Guid id)
+    public async Task<Team> GetTeamByIdAsync(Guid id)
     {
-        return _dbContext.Teams.FirstOrDefault(x => x.Id == id);
+        return await FindByCondition(l => l.Id.Equals(id)).FirstOrDefaultAsync();
     }
 
     public void UpdateTeam(Team team)
     {
-        var existingTeam = _dbContext.Teams.FirstOrDefault(x => x.Id == team.Id);
-        if (existingTeam is null || team is null)
-        {
-            throw new ArgumentException("Team doesn't exist.", nameof(team));
-        }
-
-        existingTeam.CoachName = team.CoachName;
-        existingTeam.Name = team.Name;
-
-        _dbContext.SaveChanges();
+        Update(team);
     }
 }

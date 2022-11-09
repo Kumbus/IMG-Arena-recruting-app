@@ -1,5 +1,7 @@
+using AutoMapper;
 using MatchDataManager.Api.Interfaces;
 using MatchDataManager.Api.Models;
+using MatchDataManager.Api.Models.DTO;
 using MatchDataManager.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,33 +11,41 @@ namespace MatchDataManager.Api.Controllers;
 [Route("[controller]")]
 public class TeamsController : ControllerBase
 {
-    private readonly ITeamsRepository _teamsRepository;
-    public TeamsController(ITeamsRepository teamsRepository)
+    private readonly IRepositoryWrapper _repositoryWrapper;
+    private readonly IMapper _mapper;
+    public TeamsController(IRepositoryWrapper repositoryWrapper, IMapper mapper)
     {
-        _teamsRepository = teamsRepository;
+        _mapper = mapper;
+        _repositoryWrapper = repositoryWrapper;
     }
     [HttpPost]
-    public IActionResult AddTeam(Team team)
+    public async Task<IActionResult> AddTeam(TeamForCreationDTO team)
     {
         if (ModelState.IsValid)
         {
-            if (_teamsRepository.GetAllTeams().Any(t => t.Name == team.Name))
+            var teams = await _repositoryWrapper.Team.GetAllTeamsAsync();
+            if (teams.Any(t => t.Name == team.Name))
                 return BadRequest(new { message = "Team with this name already exists." });
 
-            _teamsRepository.AddTeam(team);
-            return CreatedAtAction(nameof(GetById), new { id = team.Id }, team);
+            var mappedTeam = _mapper.Map<Team>(team);
+            _repositoryWrapper.Team.AddTeam(mappedTeam);
+            await _repositoryWrapper.SaveAsync();
+            var createdTeam = _mapper.Map<TeamDTO>(mappedTeam);
+
+            return CreatedAtAction(nameof(GetById), new { id = createdTeam.Id }, team);
         }
 
         return BadRequest(ModelState);
     }
 
     [HttpDelete]
-    public IActionResult DeleteTeam(Guid teamId)
+    public async Task<IActionResult> DeleteTeam(Guid teamId)
     {
-        var team = _teamsRepository.GetAllTeams().FirstOrDefault(x => x.Id == teamId);
+        var team = await _repositoryWrapper.Team.GetTeamByIdAsync(teamId);
         if (team is not null)
         {
-            _teamsRepository.DeleteTeam(teamId);
+            _repositoryWrapper.Team.DeleteTeam(team);
+            await _repositoryWrapper.SaveAsync();
             return Ok(new { message = "Team has been removed" });
         }
 
@@ -43,33 +53,48 @@ public class TeamsController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult Get()
+    public  async Task<IActionResult> Get()
     {
-        return Ok(_teamsRepository.GetAllTeams());
+        var teams = await _repositoryWrapper.Team.GetAllTeamsAsync();
+        var teamsResult = _mapper.Map<IEnumerable<TeamDTO>>(teams);
+        return Ok(teamsResult);
     }
 
     [HttpGet("{id:guid}")]
-    public IActionResult GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
-        var team = _teamsRepository.GetTeamById(id);
+        var team = await _repositoryWrapper.Team.GetTeamByIdAsync(id);
         if (team is null)
         {
             return NotFound();
         }
 
-        return Ok(team);
+        var teamResult = _mapper.Map<TeamDTO>(team);
+        return Ok(teamResult);
     }
 
     [HttpPut]
-    public IActionResult UpdateTeam(Team team)
+    public async Task<IActionResult> UpdateTeam(Guid id, TeamForUpdateDTO team)
     {
-        var existingTeam = _teamsRepository.GetTeamById(team.Id);
+        
         if (ModelState.IsValid)
         {
-            if (_teamsRepository.GetAllTeams().Any(t => t.Name == team.Name && t.Id != existingTeam.Id))
-                return BadRequest(new { message = "Team with this name already exists." });
+            var existingTeam = await _repositoryWrapper.Team.GetTeamByIdAsync(id);
+            if(existingTeam is null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                var teams = await _repositoryWrapper.Team.GetAllTeamsAsync();
+                if (teams.Any(t => t.Name == team.Name && t.Id != existingTeam.Id))
+                    return BadRequest(new { message = "Team with this name already exists." });
 
-            _teamsRepository.UpdateTeam(team);
+                _mapper.Map(team, existingTeam);
+                _repositoryWrapper.Team.UpdateTeam(existingTeam);
+                await _repositoryWrapper.SaveAsync();
+            }
+
             return Ok(team);
         }
 
