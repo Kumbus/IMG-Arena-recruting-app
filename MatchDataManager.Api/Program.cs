@@ -1,17 +1,22 @@
-using MatchDataManager.Api.Context;
-using MatchDataManager.Api.Interfaces;
-using MatchDataManager.Api.Repositories;
+using MatchDataManager.Domain.RepositoriesInterfaces;
+using MatchDataManager.Infrastructure;
+using MatchDataManager.Infrastructure.Repositories;
+using MatchDataManager.Services;
+using MatchDataManager.Services.Interfaces;
+using MatchDataManager.Services.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddDbContext<DatabaseContext>();
-builder.Services.AddScoped<ITeamsRepository, TeamsRepository>();
-builder.Services.AddScoped<ILocationsRepository, LocationsRepository>();
-builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<IServiceManager, ServiceManager>();
+builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
+
+
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

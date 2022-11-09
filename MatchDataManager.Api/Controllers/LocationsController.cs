@@ -1,10 +1,7 @@
-using AutoMapper;
-using MatchDataManager.Api.Interfaces;
-using MatchDataManager.Api.Models;
-using MatchDataManager.Api.Models.DTO;
-using MatchDataManager.Api.Repositories;
+using MatchDataManager.Services.DTO;
+using MatchDataManager.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace MatchDataManager.Api.Controllers;
 
@@ -12,101 +9,49 @@ namespace MatchDataManager.Api.Controllers;
 [Route("[controller]")]
 public class LocationsController : ControllerBase
 {
+    private readonly IServiceManager _serviceManager;
 
-    //ILocationsRepository _locationsRepository;
-    private readonly IRepositoryWrapper _repositoryWrapper;
-    private readonly IMapper _mapper;
-
-    public LocationsController(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+    public LocationsController(IServiceManager serviceManager)
     {
-        _repositoryWrapper = repositoryWrapper;
-        _mapper = mapper;
+        _serviceManager = serviceManager;
     }
 
     [HttpPost]
     public async Task<IActionResult> AddLocation(LocationForCreationDTO location)
     {
-        if (ModelState.IsValid)
-        {
-            var locations = await _repositoryWrapper.Location.GetAllLocationsAsync();
-            if (locations.Any(l => l.Name == location.Name))
-                return BadRequest(new { message = "Location with this name already exists." });
+        var locationDTO = await _serviceManager.LocationService.AddAsync(location);
 
-            var mappedLocation = _mapper.Map<Location>(location);
-            _repositoryWrapper.Location.AddLocation(mappedLocation);
-            await _repositoryWrapper.SaveAsync();
-
-            var createdLocation = _mapper.Map<LocationDTO>(mappedLocation);
-
-            return CreatedAtAction(nameof(GetById), new { id = createdLocation.Id }, location);
-        }
-
-        return BadRequest(ModelState);
-        
+        return CreatedAtAction(nameof(GetById), new { id = locationDTO.Id }, location);      
     }
 
     [HttpDelete]
-    public async Task<IActionResult> DeleteLocation(Guid locationId)
+    public async Task<IActionResult> DeleteLocation(Guid locationId, CancellationToken cancellationToken)
     {
-        var location = await _repositoryWrapper.Location.GetLocationByIdAsync(locationId);
-        if (location is not null)
-        {
-            _repositoryWrapper.Location.DeleteLocation(location);
-            await _repositoryWrapper.SaveAsync();
-            return NoContent();
-        }
 
-        return BadRequest(new { message = "Location with this id doesn't exists" });
+        await _serviceManager.LocationService.DeleteAsync(locationId, cancellationToken);
+        return NoContent();
   
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
-        var locations = await _repositoryWrapper.Location.GetAllLocationsAsync();
-        var locationsResult = _mapper.Map<IEnumerable<LocationDTO>>(locations);
-        return Ok(locationsResult);
+        var locations = await _serviceManager.LocationService.GetAllLocationsAsync(cancellationToken);
+        return Ok(locations);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var location = await _repositoryWrapper.Location.GetLocationByIdAsync(id);
-        if (location is null)
-        {
-            return NotFound();
-        }
-
-        var locationResult = _mapper.Map<LocationDTO>(location);
-        return Ok(locationResult);
+        var locationDTO = await _serviceManager.LocationService.GetLocationByIdAsync(id, cancellationToken);
+        return Ok(locationDTO);
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateLocation(Guid id, LocationForUpdateDTO location)
+    public async Task<IActionResult> UpdateLocation(Guid id, LocationForUpdateDTO location, CancellationToken cancellationToken)
     {
+        await _serviceManager.LocationService.UpdateAsync(id, location, cancellationToken);
+        return NoContent();
 
-        if (ModelState.IsValid)
-        {
-
-            var existingLocation = await _repositoryWrapper.Location.GetLocationByIdAsync(id);
-            if (existingLocation is null)
-            {
-                return NotFound();
-            }
-            else 
-            {
-               var locations = await _repositoryWrapper.Location.GetAllLocationsAsync();
-                if (locations.Any(l => l.Name == location.Name && id != l.Id))
-                    return BadRequest(new { message = "Location with this name already exists." });
-            } 
-
-            _mapper.Map(location, existingLocation);
-            _repositoryWrapper.Location.UpdateLocation(existingLocation);
-            await _repositoryWrapper.SaveAsync();
-
-            return Ok(location);
-        }
-
-        return BadRequest(ModelState);
     }
 }
