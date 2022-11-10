@@ -15,8 +15,6 @@ namespace MatchDataManager.Infrastructure
         public DbSet<Team> Teams { get; set; }
         public DbSet<Location> Locations { get; set; }
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder) =>
-        //    modelBuilder.ApplyConfigurationsFromAssembly(typeof(DatabaseContext).Assembly);
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {

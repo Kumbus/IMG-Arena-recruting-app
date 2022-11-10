@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MatchDataManager.Domain.Entities;
+using MatchDataManager.Domain.Exceptions;
 using MatchDataManager.Domain.RepositoriesInterfaces;
 using MatchDataManager.Services.DTO;
 using MatchDataManager.Services.Interfaces;
@@ -24,6 +25,13 @@ namespace MatchDataManager.Services.Services
 
         public async Task<LocationDTO> AddAsync(LocationForCreationDTO locationForCreationDto, CancellationToken cancellationToken = default)
         {
+            if(locationForCreationDto == null)
+                throw new ArgumentNullException(nameof(locationForCreationDto)); 
+
+            var existingLocations = await _repositoryManager.LocationsRepository.GetAllLocationsAsync(cancellationToken);
+            if (existingLocations.Any(l => l.Name == locationForCreationDto.Name))
+                throw new LocationWithThisNameExistsException(locationForCreationDto.Name);
+            
             var location = _mapper.Map<Location>(locationForCreationDto);
             _repositoryManager.LocationsRepository.AddLocation(location);
             await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -36,7 +44,7 @@ namespace MatchDataManager.Services.Services
             var location = await _repositoryManager.LocationsRepository.GetLocationByIdAsync(locationId, cancellationToken);
             if (location is null)
             {
-                //throw new LocationNotFoundException(locationId);
+                throw new LocationNotFoundException(locationId);
             }
             _repositoryManager.LocationsRepository.DeleteLocation(location);
             await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -57,7 +65,7 @@ namespace MatchDataManager.Services.Services
 
             if(location is null)
             {
-                //throw new LocationNotFoundException(locationId);
+                throw new LocationNotFoundException(locationId);
             }
 
             var locationDTO = _mapper.Map<LocationDTO>(location);
@@ -66,10 +74,17 @@ namespace MatchDataManager.Services.Services
 
         public async Task UpdateAsync(Guid locationId, LocationForUpdateDTO locationForUpdateDto, CancellationToken cancellationToken = default)
         {
+            if (locationForUpdateDto == null)
+                throw new ArgumentNullException(nameof(locationForUpdateDto));
+
+            var existingLocations = await _repositoryManager.LocationsRepository.GetAllLocationsAsync(cancellationToken);
+            if (existingLocations.Any(l => l.Name == locationForUpdateDto.Name && l.Id != locationId))
+                throw new LocationWithThisNameExistsException(locationForUpdateDto.Name);
+
             var location = await _repositoryManager.LocationsRepository.GetLocationByIdAsync(locationId, cancellationToken);
             if (location is null)
             {
-                //throw new LocationNotFoundException(locationId);
+                throw new LocationNotFoundException(locationId);
             }
             location.Name = locationForUpdateDto.Name;
             location.City = locationForUpdateDto.City;

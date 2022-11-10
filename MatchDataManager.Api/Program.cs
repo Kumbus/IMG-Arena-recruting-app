@@ -1,3 +1,4 @@
+using MatchDataManager.Api.Middlewares;
 using MatchDataManager.Domain.RepositoriesInterfaces;
 using MatchDataManager.Infrastructure;
 using MatchDataManager.Infrastructure.Repositories;
@@ -14,7 +15,7 @@ builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddScoped<IServiceManager, ServiceManager>();
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 
-
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -31,6 +32,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

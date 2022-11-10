@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\MatchDataManager.Domain.csproj" />
+    <ProjectReference Include="..\MatchDataManager.Domain\MatchDataManager.Domain.csproj" />
   </ItemGroup>
 
 </Project>

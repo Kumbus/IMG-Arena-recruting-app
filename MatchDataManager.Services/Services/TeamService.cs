@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MatchDataManager.Domain.Entities;
+using MatchDataManager.Domain.Exceptions;
 using MatchDataManager.Domain.RepositoriesInterfaces;
 using MatchDataManager.Services.DTO;
 using MatchDataManager.Services.Interfaces;
@@ -24,6 +25,10 @@ namespace MatchDataManager.Services.Services
 
         public async Task<TeamDTO> AddAsync(TeamForCreationDTO teamForCreationDto, CancellationToken cancellationToken = default)
         {
+            var existingTeams = await _repositoryManager.TeamsRepository.GetAllTeamsAsync(cancellationToken);
+            if (existingTeams.Any(t => t.Name == teamForCreationDto.Name))
+                throw new TeamWithThisNameExistsException(teamForCreationDto.Name);
+
             var team = _mapper.Map<Team>(teamForCreationDto);
             _repositoryManager.TeamsRepository.AddTeam(team);
             await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -36,7 +41,7 @@ namespace MatchDataManager.Services.Services
             var team = await _repositoryManager.TeamsRepository.GetTeamByIdAsync(teamId, cancellationToken);
             if (team is null)
             {
-                //throw new TeamNotFoundException(teamId);
+                throw new TeamNotFoundException(teamId);
             }
             _repositoryManager.TeamsRepository.DeleteTeam(team);
             await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -56,7 +61,7 @@ namespace MatchDataManager.Services.Services
 
             if (team is null)
             {
-                //throw new TeamNotFoundException(teamId);
+                throw new TeamNotFoundException(teamId);
             }
 
             var teamDTO = _mapper.Map<TeamDTO>(team);
@@ -65,10 +70,14 @@ namespace MatchDataManager.Services.Services
 
         public async Task UpdateAsync(Guid teamId, TeamForUpdateDTO teamForUpdateDto, CancellationToken cancellationToken = default)
         {
+            var existingTeams = await _repositoryManager.TeamsRepository.GetAllTeamsAsync(cancellationToken);
+            if (existingTeams.Any(t => t.Name == teamForUpdateDto.Name && t.Id != teamId))
+                throw new TeamWithThisNameExistsException(teamForUpdateDto.Name);
+
             var team = await _repositoryManager.TeamsRepository.GetTeamByIdAsync(teamId, cancellationToken);
             if (team is null)
             {
-                //throw new TeamNotFoundException(teamId);
+                throw new TeamNotFoundException(teamId);
             }
             team.Name = teamForUpdateDto.Name;
             team.CoachName = teamForUpdateDto.CoachName;
