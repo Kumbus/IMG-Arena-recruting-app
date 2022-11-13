@@ -5,11 +5,13 @@ VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MatchDataManager.Api", "MatchDataManager.Api\MatchDataManager.Api.csproj", "{29743F0C-25E4-4253-A539-95DA0E3332F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MatchDataManager.Services", "MatchDataManager.Services\MatchDataManager.Services.csproj", "{CFC18AED-62EF-46C7-AE2F-05BCAF46EFC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MatchDataManager.Services", "MatchDataManager.Services\MatchDataManager.Services.csproj", "{CFC18AED-62EF-46C7-AE2F-05BCAF46EFC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MatchDataManager.Infrastructure", "MatchDataManager.Infrastructure\MatchDataManager.Infrastructure.csproj", "{074573CC-4AF4-4309-BBAE-E56093093325}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MatchDataManager.Infrastructure", "MatchDataManager.Infrastructure\MatchDataManager.Infrastructure.csproj", "{074573CC-4AF4-4309-BBAE-E56093093325}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MatchDataManager.Domain", "MatchDataManager.Domain\MatchDataManager.Domain.csproj", "{76C6A354-1DA4-4432-BC6D-F94CC41BD5EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MatchDataManager.UnitTests", "MatchDataManager.UnitTests\MatchDataManager.UnitTests.csproj", "{AE8DDA50-D656-4227-BF0E-AE5BE0E34070}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{76C6A354-1DA4-4432-BC6D-F94CC41BD5EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76C6A354-1DA4-4432-BC6D-F94CC41BD5EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76C6A354-1DA4-4432-BC6D-F94CC41BD5EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE8DDA50-D656-4227-BF0E-AE5BE0E34070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE8DDA50-D656-4227-BF0E-AE5BE0E34070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE8DDA50-D656-4227-BF0E-AE5BE0E34070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE8DDA50-D656-4227-BF0E-AE5BE0E34070}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -25,9 +25,6 @@ namespace MatchDataManager.Services.Services
 
         public async Task<LocationDTO> AddAsync(LocationForCreationDTO locationForCreationDto, CancellationToken cancellationToken = default)
         {
-            if(locationForCreationDto == null)
-                throw new ArgumentNullException(nameof(locationForCreationDto)); 
-
             var existingLocations = await _repositoryManager.LocationsRepository.GetAllLocationsAsync(cancellationToken);
             if (existingLocations.Any(l => l.Name == locationForCreationDto.Name))
                 throw new LocationWithThisNameExistsException(locationForCreationDto.Name);
@@ -74,9 +71,6 @@ namespace MatchDataManager.Services.Services
 
         public async Task UpdateAsync(Guid locationId, LocationForUpdateDTO locationForUpdateDto, CancellationToken cancellationToken = default)
         {
-            if (locationForUpdateDto == null)
-                throw new ArgumentNullException(nameof(locationForUpdateDto));
-
             var existingLocations = await _repositoryManager.LocationsRepository.GetAllLocationsAsync(cancellationToken);
             if (existingLocations.Any(l => l.Name == locationForUpdateDto.Name && l.Id != locationId))
                 throw new LocationWithThisNameExistsException(locationForUpdateDto.Name);

@@ -17,7 +17,7 @@ public class LocationsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddLocation(LocationForCreationDTO location)
+    public async Task<ActionResult<LocationDTO>> AddLocation(LocationForCreationDTO location)
     {
         var locationDTO = await _serviceManager.LocationService.AddAsync(location);
 
@@ -34,14 +34,14 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<LocationDTO>>> Get(CancellationToken cancellationToken)
     {
         var locations = await _serviceManager.LocationService.GetAllLocationsAsync(cancellationToken);
         return Ok(locations);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<LocationDTO>> GetById(Guid id, CancellationToken cancellationToken)
     {
         var locationDTO = await _serviceManager.LocationService.GetLocationByIdAsync(id, cancellationToken);
         return Ok(locationDTO);
